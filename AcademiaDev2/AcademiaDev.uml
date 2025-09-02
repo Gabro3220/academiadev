@@ -1,0 +1,103 @@
+@startuml AcademiaDev
+
+package "academiadev" {
+    
+    class AcademiaDevSystem {
+        - courses: Map<String, Course>
+        - users: Map<String, User>
+        - enrollments: List<Enrollment>
+        - supportTickets: Queue<SupportTicket>
+        - currentUser: User
+    }
+
+    package "model" {
+        
+        abstract class User {
+            # name: String
+            # email: String
+        }
+
+        class Admin extends User {
+        }
+
+        class Student extends User {
+            - subscriptionPlan: SubscriptionPlan
+        }
+
+        interface SubscriptionPlan {
+        }
+
+        class BasicPlan implements SubscriptionPlan {
+        }
+
+        class PremiumPlan implements SubscriptionPlan {
+        }
+
+        class Course {
+            - title: String
+            - description: String
+            - instructorName: String
+            - durationInHours: int
+            - difficultyLevel: DifficultyLevel
+            - status: CourseStatus
+        }
+
+        class Enrollment {
+            - student: Student
+            - course: Course
+            - progress: int
+        }
+
+        class SupportTicket {
+            - title: String
+            - message: String
+            - user: User
+            - ticketId: int
+        }
+
+        enum DifficultyLevel {
+            BEGINNER
+            INTERMEDIATE
+            ADVANCED
+        }
+
+        enum CourseStatus {
+            ACTIVE
+            INACTIVE
+        }
+    }
+
+    package "exception" {
+        class EnrollmentException extends Exception {
+        }
+    }
+
+    package "util" {
+        class InitialData {
+        }
+
+        class GenericCsvExporter {
+        }
+    }
+}
+
+' Relacionamentos principais
+AcademiaDevSystem --> User
+AcademiaDevSystem --> Course
+AcademiaDevSystem --> Enrollment
+AcademiaDevSystem --> SupportTicket
+
+Student --> SubscriptionPlan
+Enrollment --> Student
+Enrollment --> Course
+SupportTicket --> User
+
+' Herança
+Admin --|> User
+Student --|> User
+
+' Implementação
+BasicPlan ..|> SubscriptionPlan
+PremiumPlan ..|> SubscriptionPlan
+
+@enduml
