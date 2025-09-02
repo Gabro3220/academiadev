@@ -1,0 +1,187 @@
+@startuml AcademiaDev
+
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+
+' Abstract Classes
+abstract class User {
+    # String name
+    # String email
+    + User(String name, String email)
+    + String getName()
+    + String getEmail()
+    + boolean equals(Object obj)
+    + int hashCode()
+}
+
+abstract class SubscriptionPlan {
+    # String planName
+    # double monthlyPrice
+    + SubscriptionPlan(String planName, double monthlyPrice)
+    + String getPlanName()
+    + double getMonthlyPrice()
+    + {abstract} boolean canEnrollInCourse()
+    + {abstract} int getMaxCourses()
+}
+
+' Concrete Classes
+class Admin {
+    + Admin(String name, String email)
+}
+
+class Student {
+    - SubscriptionPlan subscriptionPlan
+    - Set<Enrollment> enrollments
+    + Student(String name, String email, SubscriptionPlan plan)
+    + SubscriptionPlan getSubscriptionPlan()
+    + void setSubscriptionPlan(SubscriptionPlan plan)
+    + Set<Enrollment> getEnrollments()
+    + void addEnrollment(Enrollment enrollment)
+    + boolean canEnrollInMoreCourses()
+}
+
+class BasicPlan {
+    - {static} final int MAX_COURSES = 3
+    + BasicPlan()
+    + boolean canEnrollInCourse()
+    + int getMaxCourses()
+}
+
+class PremiumPlan {
+    + PremiumPlan()
+    + boolean canEnrollInCourse()
+    + int getMaxCourses()
+}
+
+class Course {
+    - String id
+    - String title
+    - String description
+    - String instructor
+    - DifficultyLevel difficultyLevel
+    - CourseStatus status
+    - int duration
+    + Course(String id, String title, String description, String instructor, DifficultyLevel level, int duration)
+    + String getId()
+    + String getTitle()
+    + String getDescription()
+    + String getInstructor()
+    + DifficultyLevel getDifficultyLevel()
+    + CourseStatus getStatus()
+    + void setStatus(CourseStatus status)
+    + int getDuration()
+}
+
+class Enrollment {
+    - Student student
+    - Course course
+    - LocalDateTime enrollmentDate
+    - int progress
+    + Enrollment(Student student, Course course)
+    + Student getStudent()
+    + Course getCourse()
+    + LocalDateTime getEnrollmentDate()
+    + int getProgress()
+    + void setProgress(int progress)
+    + boolean isCompleted()
+}
+
+class SupportTicket {
+    - {static} int ticketCounter = 1
+    - int ticketId
+    - Student student
+    - String subject
+    - String description
+    - LocalDateTime createdAt
+    - boolean resolved
+    + SupportTicket(Student student, String subject, String description)
+    + int getTicketId()
+    + Student getStudent()
+    + String getSubject()
+    + String getDescription()
+    + LocalDateTime getCreatedAt()
+    + boolean isResolved()
+    + void resolve()
+}
+
+class AcademiaDevSystem {
+    - Map<String, User> users
+    - Map<String, Course> courses
+    - List<Enrollment> enrollments
+    - Queue<SupportTicket> supportTickets
+    - Scanner scanner
+    + AcademiaDevSystem()
+    + void initializeData()
+    + void start()
+    + User login()
+    + void showAdminMenu(Admin admin)
+    + void showStudentMenu(Student student)
+    + void createCourse(Admin admin)
+    + void manageCourses(Admin admin)
+    + void viewReports(Admin admin)
+    + void enrollInCourse(Student student)
+    + void viewMyEnrollments(Student student)
+    + void updateProgress(Student student)
+    + void createSupportTicket(Student student)
+    + void processSupportTickets(Admin admin)
+    + void exportData(Admin admin)
+}
+
+class GenericCsvExporter {
+    + {static} <T> void exportToCsv(List<T> data, String filename, Class<T> clazz)
+    - {static} String getFieldValue(Object obj, Field field)
+}
+
+class Main {
+    + {static} void main(String[] args)
+}
+
+' Enums
+enum DifficultyLevel {
+    BEGINNER
+    INTERMEDIATE
+    ADVANCED
+}
+
+enum CourseStatus {
+    ACTIVE
+    INACTIVE
+    DRAFT
+}
+
+' Exception
+class EnrollmentException {
+    + EnrollmentException(String message)
+}
+
+' Relationships
+User <|-- Admin
+User <|-- Student
+SubscriptionPlan <|-- BasicPlan
+SubscriptionPlan <|-- PremiumPlan
+
+Student *-- SubscriptionPlan : has
+Student "1" *-- "*" Enrollment : has
+Course "1" *-- "*" Enrollment : enrolled in
+Course *-- DifficultyLevel : has
+Course *-- CourseStatus : has
+
+SupportTicket "*" -- "1" Student : created by
+
+AcademiaDevSystem "1" *-- "*" User : manages
+AcademiaDevSystem "1" *-- "*" Course : manages
+AcademiaDevSystem "1" *-- "*" Enrollment : manages
+AcademiaDevSystem "1" *-- "*" SupportTicket : manages
+
+Main ..> AcademiaDevSystem : uses
+AcademiaDevSystem ..> GenericCsvExporter : uses
+AcademiaDevSystem ..> EnrollmentException : throws
+
+note right of Student : Pode ter plano Básico\n(máx 3 cursos) ou\nPremium (ilimitado)
+
+note right of SupportTicket : Fila FIFO para\natendimento
+
+note bottom of AcademiaDevSystem : Sistema principal com\ntodos os CRUDs e\nregras de negócio
+
+@enduml
